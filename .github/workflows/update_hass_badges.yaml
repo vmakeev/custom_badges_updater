@@ -5,7 +5,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: "0 8 * * *"
+    - cron: "0 */4 * * *"
   workflow_dispatch:
 
 jobs:
@@ -35,7 +35,21 @@ jobs:
           for integration in "${integrations[@]}"
           do
             installations=$(jq --arg integration "${integration}" '.[$integration].total' .tmp/custom_integrations.json)
-            echo "Integration ${integration} has ${installations} installations"
+            if [ "${installations}" != "null" ]
+            then
+              echo "Integration ${integration} has ${installations} installations:"
+              versions=$(jq -c -r --arg integration "${integration}" '.[$integration].versions | keys | .[]' .tmp/custom_integrations.json)
+              readarray -t versions_array <<< "${versions}"           
+              for version in "${versions_array[@]}"
+              do
+                version_installations=$(jq --arg integration "${integration}" --arg version "${version}"  '.[$integration].versions[$version]' .tmp/custom_integrations.json)
+                echo "  * version ${version} has ${version_installations} installations"
+                curl -s "https://img.shields.io/badge/Active_installations-v{$version}:_${version_installations}-blue" --output "${integration}-${version}.svg"
+              done
+            else
+              installations="0"
+              echo "Integration ${integration} has no installations."
+            fi
             curl -s "https://img.shields.io/badge/Active_installations-${installations}-yellowgreen" --output "${integration}.svg"
           done
 
