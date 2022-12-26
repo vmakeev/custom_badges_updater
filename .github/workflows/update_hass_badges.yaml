@@ -1,0 +1,48 @@
+name: Update badges
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 8 * * *"
+  workflow_dispatch:
+
+jobs:
+  update-badges:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Make temp working directory
+        run: |
+          mkdir -p .tmp
+
+      - name: Download custom integration analytics file
+        run: |
+          curl -s https://analytics.home-assistant.io/custom_integrations.json --output .tmp/custom_integrations.json
+
+      - name: Download badges for integrations
+        run: |
+          integrations=(
+            huawei_mesh_router,
+            tplink_easy_smart
+          )
+
+          for integration in "${integrations[@]}"
+          do
+            installations=$(jq --arg integration "${integration}" '.[$integration].total' .tmp/custom_integrations.json)
+            echo "Integration ${integration} has ${installations} installations"
+            curl -s "https://img.shields.io/badge/Active_installations-${installations}-yellowgreen" --output "${integration}.svg"
+          done
+
+      - name: Remove temp working directory
+        run: |
+          rm -rf .tmp
+
+      - name: Commit & Push changes
+        uses: actions-js/push@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
