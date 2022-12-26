@@ -27,8 +27,9 @@ jobs:
       - name: Download badges for integrations
         run: |
           integrations=(
-            huawei_mesh_router,
+            huawei_mesh_router
             tplink_easy_smart
+            hass_yt_dlp
           )
 
           for integration in "${integrations[@]}"
