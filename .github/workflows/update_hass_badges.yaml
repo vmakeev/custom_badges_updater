@@ -44,13 +44,13 @@ jobs:
               do
                 version_installations=$(jq --arg integration "${integration}" --arg version "${version}"  '.[$integration].versions[$version]' .tmp/custom_integrations.json)
                 echo "  * version ${version} has ${version_installations} installations"
-                curl -s "https://img.shields.io/badge/Active_installations_v{$version}-${version_installations}-blue" --output "${integration}-${version}.svg"
+                curl -s "https://img.shields.io/badge/active_installations@v{$version}-${version_installations}-blue" --output "${integration}-${version}.svg"
               done
             else
               installations="0"
               echo "Integration ${integration} has no installations."
             fi
-            curl -s "https://img.shields.io/badge/Active_installations-${installations}-yellowgreen" --output "${integration}.svg"
+            curl -s "https://img.shields.io/badge/active_installations-${installations}-yellowgreen" --output "${integration}.svg"
           done
 
       - name: Remove temp working directory
